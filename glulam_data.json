@@ -1,0 +1,90 @@
+{
+    "GL24H": {
+        "f_m_y_k": 24,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 11500,
+        "G_mean": 650,
+        "E_005": 9600,
+        "G_005": 540,
+        "density_characteristic": 385,
+        "density_mean": 240
+    },
+    "GL28H": {
+        "f_m_y_k": 28,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 12600,
+        "G_mean": 650,
+        "E_005": 10500,
+        "G_005": 540,
+        "density_characteristic": 425,
+        "density_mean": 460
+    },
+    "GL32H": {
+        "f_m_y_k": 32,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 14200,
+        "G_mean": 650,
+        "E_005": 11800,
+        "G_005": 540,
+        "density_characteristic": 440,
+        "density_mean": 490
+    },
+    "GL36H": {
+        "f_m_y_k": 36,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 15000,
+        "G_mean": 650,
+        "E_005": 12200,
+        "G_005": 540,
+        "density_characteristic": 455,
+        "density_mean": 520
+    },
+    "GL24C": {
+        "f_m_y_k": 24,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 11000,
+        "G_mean": 650,
+        "E_005": 9100,
+        "G_005": 540,
+        "density_characteristic": 365,
+        "density_mean": 400
+    },
+    "GL28C": {
+        "f_m_y_k": 28,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 12500,
+        "G_mean": 650,
+        "E_005": 10400,
+        "G_005": 540,
+        "density_characteristic": 390,
+        "density_mean": 420
+    },
+    "GL32C": {
+        "f_m_y_k": 32,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 13500,
+        "G_mean": 650,
+        "E_005": 11200,
+        "G_005": 540,
+        "density_characteristic": 400,
+        "density_mean": 440
+    },
+    "GL36C": {
+        "f_m_y_k": 36,
+        "f_v_k": 3.5,
+        "f_c_90_k": 2.5,
+        "E_0_mean": 14700,
+        "G_mean": 650,
+        "E_005": 11900,
+        "G_005": 540,
+        "density_characteristic": 430,
+        "density_mean": 465
+    }
+}

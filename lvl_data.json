@@ -1,0 +1,38 @@
+{
+    "LVL_S44": {
+        "f_m_y_k": 44,
+        "f_v_k": 5.7,
+        "f_c_90_k": 3.4,
+        "E_0_mean": 13500,
+        "G_mean": 600,
+        "E_005": 11600,
+        "G_005": 400,
+        "density_characteristic": 480,
+        "density_mean": 510,
+        "size_factor": 0.12
+    },
+    "LVL_Q28": {
+        "f_m_y_k": 28,
+        "f_v_k": 5.7,
+        "f_c_90_k": 9.0,
+        "E_0_mean": 10000,
+        "G_mean": 600,
+        "E_005": 8300,
+        "G_005": 400,
+        "density_characteristic": 480,
+        "density_mean": 510,
+        "size_factor": 0.12
+    },
+    "LVL_Q32": {
+        "f_m_y_k": 32,
+        "f_v_k": 5.7,
+        "f_c_90_k": 9.0,
+        "E_0_mean": 10500,
+        "G_mean": 600,
+        "E_005": 8800,
+        "G_005": 400,
+        "density_characteristic": 480,
+        "density_mean": 510,
+        "size_factor": 0.12
+    }
+}

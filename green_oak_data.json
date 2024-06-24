@@ -1,0 +1,46 @@
+{
+    "TH1": {
+        "f_m_y_k": 30,
+        "f_v_k": 3.0,
+        "f_c_90_k": 8.0,
+        "E_0_mean": 10000,
+        "G_mean": 600,
+        "E_005": 8000,
+        "G_005": null,
+        "density_characteristic": 569,
+        "density_mean": 680
+    },
+    "TH2": {
+        "f_m_y_k": 24.4,
+        "f_v_k": 3.0,
+        "f_c_90_k": 8.0,
+        "E_0_mean": 6720,
+        "G_mean": 420,
+        "E_005": 6590,
+        "G_005": null,
+        "density_characteristic": 598,
+        "density_mean": 704
+    },
+    "THA": {
+        "f_m_y_k": 40,
+        "f_v_k": 3.8,
+        "f_c_90_k": 8.8,
+        "E_0_mean": 11000,
+        "G_mean": 700,
+        "E_005": 9400,
+        "G_005": null,
+        "density_characteristic": 595,
+        "density_mean": 713
+    },
+    "THB": {
+        "f_m_y_k": 30,
+        "f_v_k": 3.0,
+        "f_c_90_k": 8.0,
+        "E_0_mean": 10000,
+        "G_mean": 600,
+        "E_005": 8000,
+        "G_005": null,
+        "density_characteristic": 584,
+        "density_mean": 692
+    }
+}
