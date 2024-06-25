@@ -71,6 +71,56 @@ class TimberDesign(TimberBeam):
                                                      )
         return final_deflection / deflection_limit
 
+    def _find_utilisation_results(
+            self,
+            load_duration: str,
+            is_load_sharing: bool,
+            permanent_udl: float,
+            imposed_udl: float,
+            imposed_combination_factor: float,
+            deflection_limit: float,
+            is_restrained: bool = True,
+            permanent_load_factor: float = 1.35,
+            variable_load_factor: float = 1.5,
+            with_creep: bool = True,
+            ) -> dict:
+        bending_ur = self.get_bending_utilisation(
+            permanent_udl,
+            imposed_udl,
+            permanent_load_factor,
+            variable_load_factor,
+            is_load_sharing,
+            load_duration)
+        shear_ur = self.get_shear_utilisation(
+            permanent_udl,
+            imposed_udl,
+            permanent_load_factor,
+            variable_load_factor,
+            is_load_sharing,
+            load_duration)
+        ltb_ur = self.get_lateral_torsional_buckling_utilisation(
+            permanent_udl,
+            imposed_udl,
+            permanent_load_factor,
+            variable_load_factor,
+            is_load_sharing,
+            load_duration,
+            is_restrained)
+        deflection_ur = self.get_final_deflection_utilisation(
+            permanent_udl,
+            imposed_udl,
+            with_creep,
+            imposed_combination_factor,
+            deflection_limit
+        )
+        results = {
+            "bending_UR": bending_ur,
+            "shear_UR": shear_ur,
+            "LTB_UR": ltb_ur,
+            "deflection_UR": deflection_ur
+            }
+        return results
+
     def get_auto_designed_timber_size_list(
             self,
             load_duration: str,
@@ -164,7 +214,8 @@ class TimberDesign(TimberBeam):
             variable_load_factor: float = 1.5,
             with_creep: bool = True,
             height_iteration = 5,
-            starting_height = 100
+            starting_height = 100,
+            max_height = 600
             ) -> dict:
         '''Auto designs timber beam size to smallest height for a given breadth'''
         self.height = starting_height
@@ -194,6 +245,9 @@ class TimberDesign(TimberBeam):
 
         while not passes_checks:
             self.height += height_iteration
+            if self.height > max_height:
+                self.height = max_height
+                break
             selfweight = self.get_beam_selfweight_per_m()
             permanent_udl_plus_swt = permanent_udl + selfweight
             ur_results = self._find_utilisation_results(
@@ -208,7 +262,7 @@ class TimberDesign(TimberBeam):
                 variable_load_factor,
                 with_creep
                 )
-            
+
             if ur_results.get("LTB_UR") > ltb_ur:
                 print("Increasing height is making lateral torsional buckling worse.")
                 break
@@ -224,7 +278,7 @@ class TimberDesign(TimberBeam):
         results.update(ur_results)
         return results
 
-    def _find_utilisation_results(
+    def get_auto_designed_timber_size_breadth(
             self,
             load_duration: str,
             is_load_sharing: bool,
@@ -236,172 +290,60 @@ class TimberDesign(TimberBeam):
             permanent_load_factor: float = 1.35,
             variable_load_factor: float = 1.5,
             with_creep: bool = True,
+            breadth_iteration = 5,
+            starting_breadth = 40,
+            max_breadth = 300
             ) -> dict:
-        bending_ur = self.get_bending_utilisation(
-            permanent_udl,
-            imposed_udl,
-            permanent_load_factor,
-            variable_load_factor,
-            is_load_sharing,
-            load_duration)
-        shear_ur = self.get_shear_utilisation(
-            permanent_udl,
-            imposed_udl,
-            permanent_load_factor,
-            variable_load_factor,
-            is_load_sharing,
-            load_duration)
-        ltb_ur = self.get_lateral_torsional_buckling_utilisation(
-            permanent_udl,
-            imposed_udl,
-            permanent_load_factor,
-            variable_load_factor,
-            is_load_sharing,
+        '''Auto designs timber beam size to smallest breadth for a given height.'''
+        self.breadth = starting_breadth
+        selfweight = self.get_beam_selfweight_per_m()
+        permanent_udl_plus_swt = permanent_udl + selfweight
+        ur_results = self._find_utilisation_results(
             load_duration,
-            is_restrained)
-        deflection_ur = self.get_final_deflection_utilisation(
-            permanent_udl,
+            is_load_sharing,
+            permanent_udl_plus_swt,
             imposed_udl,
-            with_creep,
             imposed_combination_factor,
-            deflection_limit
-        )
-        results = {
-            "bending_UR": bending_ur,
-            "shear_UR": shear_ur,
-            "LTB_UR": ltb_ur,
-            "deflection_UR": deflection_ur
-            }
-        return results
-
-'''
-/**
-Auto designs timber beam size to smallest breadth for a given depth
-*/
-Get_Auto_Designed_Timber_Size_Breadth = LAMBDA(
-    service_class,
-    load_duration,
-    load_sharing_bool,
-    strength_class,
-    material,
-    permanent_UDL,
-    imposed_UDL,
-    restrained_bool,
-    length_mm,
-    effective_length_factor,
-    imposed_combination_factor,
-    deflection_limit,
-    height,
-    [breadth],
-    LET(
-        L, length_mm,
-        K_ef, effective_length_factor,
-        ϕ_2, imposed_combination_factor,
-        δ_lim, deflection_limit,
-        L_ef, K_ef * L,
-        h, height,
-        b, IF(ISOMITTED(breadth), 40, breadth),
-        b_next, b + 5, # change value of iteration here
-        g_swt, Get_Beam_Selfweight_per_m(b, h, material, strength_class),
-        g_k, permanent_UDL,
-        g_kt, SUM(g_k, g_swt),
-        q_k, imposed_UDL,
-        
-        # Bending
-        design_moment_kNm, Loading.Get_Design_Bending_Moment(g_kt, q_k, L),
-        bending_stress, Get_Bending_Stress(b, h, material, design_moment_kNm),
-        bending_strength, Get_Bending_Strength(
-            h,
-            material,
-            strength_class,
-            service_class,
-            load_sharing_bool,
-            load_duration
-        ),
-        bending_UR, bending_stress / bending_strength,
-        
-        # Shear
-        shear_strength, Get_Shear_Strength(
-            material,
-            strength_class,
-            service_class,
-            load_sharing_bool,
-            load_duration
-        ),
-        design_shear_kN, Loading.Get_Design_Shear_Force(g_kt, q_k, L),
-        shear_stress, Get_Shear_Stress(design_shear_kN, b, h, material),
-        shear_UR, shear_stress / shear_strength,
-        
-        # LTB
-        buckling_strength, Get_Buckling_Strength(
-            b,
-            h,
-            L_ef,
-            material,
-            strength_class,
-            bending_strength
-        ),
-        LTB_UR, IF(OR(b >= h, restrained_bool), "Not Req'd", bending_stress / buckling_strength),
-        
-        # Deflection
-        δ_fin, Get_Final_Deflection(
-            g_kt,
-            q_k,
-            L,
-            material,
-            strength_class,
-            b,
-            h,
-            service_class,
-            ϕ_2
-        ),
-        δ_UR, δ_fin / δ_lim,
-        #
-        results, MAKEARRAY(6, 1, LAMBDA(r, c, CHOOSE(r, b, h, bending_UR, shear_UR, LTB_UR, δ_UR))),
-        #
-        IF(
-            AND(bending_UR < 1, shear_UR < 1, δ_UR < 1),
-            IF(
-                OR(restrained_bool, LTB_UR = "Not Req'd"),
-                results,
-                IF(
-                    LTB_UR < 1,
-                    results,
-                    Get_Auto_Designed_Timber_Size_Breadth(
-                        service_class,
-                        load_duration,
-                        load_sharing_bool,
-                        strength_class,
-                        material,
-                        g_k,
-                        q_k,
-                        restrained_bool,
-                        L,
-                        K_ef,
-                        ϕ_2,
-                        δ_lim,
-                        h,
-                        b_next
-                    )
-                )
-            ),
-            Get_Auto_Designed_Timber_Size_Breadth(
-                service_class,
-                load_duration,
-                load_sharing_bool,
-                strength_class,
-                material,
-                g_k,
-                q_k,
-                restrained_bool,
-                L,
-                K_ef,
-                ϕ_2,
-                δ_lim,
-                h,
-                b_next
+            deflection_limit,
+            is_restrained,
+            permanent_load_factor,
+            variable_load_factor,
+            with_creep
             )
-        )
-    )
-)
-'''
+
+        passes_checks = True
+        for result in ur_results.values():
+            if result is None:
+                continue
+            if result > 1:
+                passes_checks = False
+                break
+
+        while not passes_checks:
+            self.breadth += breadth_iteration
+            if self.breadth > max_breadth:
+                self.breadth = max_breadth
+                break
+            selfweight = self.get_beam_selfweight_per_m()
+            permanent_udl_plus_swt = permanent_udl + selfweight
+            ur_results = self._find_utilisation_results(
+                load_duration,
+                is_load_sharing,
+                permanent_udl_plus_swt,
+                imposed_udl,
+                imposed_combination_factor,
+                deflection_limit,
+                is_restrained,
+                permanent_load_factor,
+                variable_load_factor,
+                with_creep
+                )
+
+            passes_checks = all(result is not None and result <= 1 for result in ur_results.values())
+
+        results = {
+            "breadth": self.breadth,
+            "height": self.height,
+            }
+        results.update(ur_results)
+        return results
