@@ -191,7 +191,7 @@ class TimberBeam(TimberSection):
                              ) -> float:
         '''Returns the max final deflection from a UDL.
 
-        Input uniformly distrbuted loads in [kN/m].
+        Input uniformly distributed loads in [kN/m].
         '''
         delta_flex_g = self.get_flexural_deflection(permanent_udl, 1, with_creep)
         delta_flex_q = self.get_flexural_deflection(imposed_udl, imposed_combination_factor, with_creep)

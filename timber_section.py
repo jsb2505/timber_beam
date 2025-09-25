@@ -62,6 +62,8 @@ class TimberSection():
     def get_torsion_coefficient_beta(self) -> float:
         '''Aspect ratio coefficient for torsional moment of inertia.
         No exact formulas for non-circular cross-sections exist.
+
+        Ref: https://roymech.org/Useful_Tables/Torsion.html
         '''
         long_side = max(self.height, self.breadth)
         short_side = min(self.height, self.breadth)
