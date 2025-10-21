@@ -91,7 +91,7 @@ class TimberMaterial():
         # only softwood or glulam get bearing support enhancement
         if (bearing_support_condition == 0
             or self.material_type not in ["softwood", "glulam"]):
-            k_c_90 = 1.0
+            k_c_90 = 1.0  # i.e. no enhancement
         elif bearing_support_condition == 1:
             if self.material_type == "softwood":
                 k_c_90 = 1.25
