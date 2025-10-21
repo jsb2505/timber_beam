@@ -222,6 +222,7 @@ class TimberMaterial():
             #            + (distance_to_notch * effective_height)) / effective_height**2
         return k_v
 
+    @staticmethod
     def get_notch_ratio(height: float, notch_depth: float) -> float:
         '''Returns the notch depth ratio known as alpha.'''
         return (height - notch_depth) / height
