@@ -1,8 +1,14 @@
 import json
 from math import sqrt
+from pathlib import Path
 
 
 class TimberMaterial():
+
+    # Material data files sit alongside this module. Resolving them from the module
+    # location rather than the working directory lets the package be imported from
+    # anywhere, rather than only when run from its own folder.
+    DATA_DIR = Path(__file__).resolve().parent
 
     VALID_MATERIALS = ["softwood", "hardwood", "glulam", "lvl", "green_oak"]
     VALID_SERVICE_CLASSES = [1, 2, 3]
@@ -38,9 +44,15 @@ class TimberMaterial():
         material_type = material_type.strip().lower()
         strength_grade.strip().upper()
         if material_type in self.VALID_MATERIALS:
-            file_name = material_type + "_data.json"
-            with open(file_name, encoding='utf-8') as f:
-                timber_data_dict = json.load(f)
+            data_file = self.DATA_DIR / f"{material_type}_data.json"
+            try:
+                with open(data_file, encoding='utf-8') as f:
+                    timber_data_dict = json.load(f)
+            except FileNotFoundError as error:
+                raise FileNotFoundError(
+                    f"Material data file not found: {data_file}. "
+                    "Expected it to sit alongside timber_material.py."
+                ) from error
         else:
             raise ValueError(f"Material type, {material_type}, not valid. "+
                              f"Valid material types: {self.VALID_MATERIALS}.")
