@@ -190,6 +190,7 @@ class TimberDesign(TimberBeam):
                     results = {
                         "breadth": self.breadth,
                         "height": self.height,
+                        "design_passes": True,
                         }
                     results.update(ur_results)
                     return results
@@ -197,6 +198,7 @@ class TimberDesign(TimberBeam):
         results = {
             "breadth": self.breadth,
             "height": self.height,
+            "design_passes": False,
             }
         results.update(ur_results)
         return results
@@ -247,7 +249,6 @@ class TimberDesign(TimberBeam):
             self.height += height_iteration
             if self.height > max_height:
                 self.height = max_height
-                break
             selfweight = self.get_beam_selfweight_per_m()
             permanent_udl_plus_swt = permanent_udl + selfweight
             ur_results = self._find_utilisation_results(
@@ -263,17 +264,24 @@ class TimberDesign(TimberBeam):
                 with_creep
                 )
 
-            if ur_results.get("LTB_UR") > ltb_ur:
+            current_ltb_ur = ur_results.get("LTB_UR")
+            if (current_ltb_ur is not None
+                    and ltb_ur is not None
+                    and current_ltb_ur > ltb_ur):
                 print("Increasing height is making lateral torsional buckling worse.")
                 break
 
-            ltb_ur = ur_results.get("LTB_UR")
+            ltb_ur = current_ltb_ur
 
-            passes_checks = all(result is not None and result <= 1 for result in ur_results.values())
+            passes_checks = all(result is None or result <= 1 for result in ur_results.values())
+
+            if self.height >= max_height:
+                break
 
         results = {
             "breadth": self.breadth,
             "height": self.height,
+            "design_passes": passes_checks,
             }
         results.update(ur_results)
         return results
@@ -323,7 +331,6 @@ class TimberDesign(TimberBeam):
             self.breadth += breadth_iteration
             if self.breadth > max_breadth:
                 self.breadth = max_breadth
-                break
             selfweight = self.get_beam_selfweight_per_m()
             permanent_udl_plus_swt = permanent_udl + selfweight
             ur_results = self._find_utilisation_results(
@@ -339,11 +346,15 @@ class TimberDesign(TimberBeam):
                 with_creep
                 )
 
-            passes_checks = all(result is not None and result <= 1 for result in ur_results.values())
+            passes_checks = all(result is None or result <= 1 for result in ur_results.values())
+
+            if self.breadth >= max_breadth:
+                break
 
         results = {
             "breadth": self.breadth,
             "height": self.height,
+            "design_passes": passes_checks,
             }
         results.update(ur_results)
         return results

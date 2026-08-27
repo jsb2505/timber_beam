@@ -46,10 +46,10 @@ class TimberBeam(TimberSection):
     @property
     def effective_length(self) -> float:
         '''Returns effective length in [mm].'''
-        return self._effective_length_factor
+        return self._effective_length
 
     def _set_effective_length(self) -> None:
-        self._effective_length_factor = self.length * self.effective_length_factor
+        self._effective_length = self._length * self._effective_length_factor
 
     def get_beam_selfweight_per_m(self) -> float:
         '''Returns beam selfweight in [kN/m].'''
