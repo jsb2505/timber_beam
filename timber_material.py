@@ -42,7 +42,7 @@ class TimberMaterial():
 
     def set_material(self, material_type: str = "softwood", strength_grade: str = "C24") -> None:
         material_type = material_type.strip().lower()
-        strength_grade.strip().upper()
+        strength_grade = strength_grade.strip().upper()
         if material_type in self.VALID_MATERIALS:
             data_file = self.DATA_DIR / f"{material_type}_data.json"
             try:
@@ -164,7 +164,10 @@ class TimberMaterial():
 
     def get_k_h(self, height: float) -> float:
         if self.material_type in ["softwood", "hardwood", "green_oak"]:
-            if height <= 150:
+            # EC5 cl. 3.2(3): the depth factor applies to solid timber with
+            # characteristic density <= 700 kg/m^3 only (excludes D65-D80).
+            density_characteristic = self.material_properties["density_characteristic"]
+            if height <= 150 and density_characteristic <= 700:
                 k_h = min((150 / height)**0.2, 1.3)
             else:
                 k_h = 1

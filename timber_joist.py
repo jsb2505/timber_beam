@@ -129,6 +129,16 @@ class TimberJoist(TimberBeam):
         floor_width = self.floor_width / 10**3
         floor_span = self.length / 10**3
         fundamental_frequency = self.get_fundamental_frequency(joist_stiffness_per_metre, mass_of_floor_per_unit_area)
+        # EC5 cl. 7.3.3 applies for 8 Hz < f1; above 40 Hz the bracketed term
+        # goes negative and Python would silently return a COMPLEX number.
+        if fundamental_frequency <= 8:
+            raise ValueError(
+                f"Fundamental frequency {fundamental_frequency:.2f} Hz <= 8 Hz: "
+                "the EC5 cl. 7.3.3 method does not apply; special investigation required.")
+        if fundamental_frequency >= 40:
+            raise ValueError(
+                f"Fundamental frequency {fundamental_frequency:.2f} Hz >= 40 Hz: "
+                "Eq 7.7 has no real solution (no first-order modes below 40 Hz).")
         floor_stiffness_per_metre = floor_stiffness_per_metre / 10**6
         joist_stiffness_per_metre = joist_stiffness_per_metre / 10**6
         return (((40 / fundamental_frequency)**2 - 1)
@@ -192,13 +202,20 @@ class TimberJoist(TimberBeam):
         is twice this value as they must be doubled up.
         '''
         coefficient_for_grade = 1.075 if self.material.strength_grade == "C24" else 1
-        return (0.165
-                * (-0.308 * span_of_joists_on_to_trimmer / 1000 + 3.38)
-                * (0.0214 * self.breadth + 1.12)
-                * (0.0149 * self.height - 0.073)
-                * 1000
-                * coefficient_for_grade
-                )
+        max_span = (0.165
+                    * (-0.308 * span_of_joists_on_to_trimmer / 1000 + 3.38)
+                    * (0.0214 * self.breadth + 1.12)
+                    * (0.0149 * self.height - 0.073)
+                    * 1000
+                    * coefficient_for_grade
+                    )
+        # The empirical fit changes sign outside its calibration range and
+        # would otherwise silently return a negative "max span".
+        if max_span <= 0:
+            raise ValueError(
+                "Trimmer span fit returned a non-positive span - the inputs are "
+                "outside the empirical formula's validity range.")
+        return max_span
 
     def get_max_trimming_joist_span(self,
                                     span_of_trimmed_joists_onto_trimmer: float,
@@ -210,11 +227,18 @@ class TimberJoist(TimberBeam):
         is twice this value as they must be doubled up.
         '''
         coefficient_for_grade = 1.075 if self.material.strength_grade == "C24" else 1
-        return (0.032
-                * (-0.31 * span_of_supported_trimmer_beam / 1000 + 3.8)
-                * (-1.52 * span_of_trimmed_joists_onto_trimmer / self.length + 3.93)
-                * (0.022 * self.breadth + 1.79)
-                * (0.0196 * self.height - 0.16)
-                * 1000
-                * coefficient_for_grade
-                )
+        max_span = (0.032
+                    * (-0.31 * span_of_supported_trimmer_beam / 1000 + 3.8)
+                    * (-1.52 * span_of_trimmed_joists_onto_trimmer / self.length + 3.93)
+                    * (0.022 * self.breadth + 1.79)
+                    * (0.0196 * self.height - 0.16)
+                    * 1000
+                    * coefficient_for_grade
+                    )
+        # The empirical fit changes sign outside its calibration range and
+        # would otherwise silently return a negative "max span".
+        if max_span <= 0:
+            raise ValueError(
+                "Trimming joist span fit returned a non-positive span - the inputs "
+                "are outside the empirical formula's validity range.")
+        return max_span
