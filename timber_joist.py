@@ -197,9 +197,17 @@ class TimberJoist(TimberBeam):
                              span_of_joists_on_to_trimmer: float,
                              ) -> float:
         '''Returns the max span of the doubled up trimmer joist.
-        
+
         The breadth is for the single trimmer so the total breadth
         is twice this value as they must be doubled up.
+
+        Empirical, non-Eurocode: the trimmer beam fit from the Manual for the
+        Design of Timber Building Structures to Eurocode 5 (IStructE/TRADA,
+        2007), section 8.4.4. Validity per the Manual (NOT enforced here):
+        trimmed joist span <= 6 m; 38 <= b <= 75 mm per member;
+        147 <= h <= 220 mm; C16 (C24 = +7.5%). Assumes a 0.5 kN/m2 floor with
+        1.5 kN/m2 imposed load plus lightweight partitions <= 0.8 kN/m run.
+        Initial sizing only.
         '''
         coefficient_for_grade = 1.075 if self.material.strength_grade == "C24" else 1
         max_span = (0.165
@@ -222,9 +230,20 @@ class TimberJoist(TimberBeam):
                                     span_of_supported_trimmer_beam: float,
                                     ) -> float:
         '''Returns the max span of the doubled up trimming joist which supports a trimmer.
-        
+
         The breadth is for the single trimming joist so the total breadth
         is twice this value as they must be doubled up.
+
+        Empirical, non-Eurocode: the trimming joist fit from the Manual for
+        the Design of Timber Building Structures to Eurocode 5
+        (IStructE/TRADA, 2007), section 8.4.4. In the Manual's terms
+        d3 = span_of_supported_trimmer_beam (<= 3.0 m per Fig 8.1),
+        d1 = span_of_trimmed_joists_onto_trimmer, d2 = self.length (the
+        trimming joist's own trial span - the fit is implicit in this term).
+        Validity per the Manual (NOT enforced here): 38 <= b <= 75 mm per
+        member; 147 <= h <= 220 mm; C16 (C24 = +7.5%). Assumes the trimmer
+        loads above plus a partition <= 0.8 kN/m run over d1 only.
+        Initial sizing only.
         '''
         coefficient_for_grade = 1.075 if self.material.strength_grade == "C24" else 1
         max_span = (0.032
