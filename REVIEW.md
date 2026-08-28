@@ -299,6 +299,9 @@ repos currently retain them; `timber-ec5`'s README flags them.
 
 ## 6. Outstanding items for the engineer
 
+> **Superseded in part — see §7 (resolution log, 28 August 2026)** for the
+> items closed by the engineer's decisions and the EN 338:2016 verification.
+
 1. EN 338:2016 D-class check: D60–D80 f_c,90,k (and D18 f_v,k) — N8.
 2. GL36H/GL36C: delete or mark legacy with sources — N9.
 3. Green oak: SC3 k_def 2.0 vs 3.0 (cl. 3.2(4) reading) and the k_mod service
@@ -310,3 +313,131 @@ repos currently retain them; `timber-ec5`'s README flags them.
 7. k_c,90 geometry conditions on any enhanced bearing — N4.
 8. UK NA edition strings for citations; modal damping ratio default (0.02 used,
    EC5 recommends 0.01 unless proven) — flagged in `timber-ec5` docstrings.
+
+---
+
+## 7. Resolution log — 28 August 2026
+
+Engineer decisions and verifications recorded against the findings above.
+
+### Closed by verification against BS EN 338:2016 (engineer-supplied copy)
+
+- **N8 — CLOSED, review suspicion REFUTED.** The full softwood and hardwood
+  data sets in both repos were checked value-by-value against BS EN 338:2016
+  Tables 1 and 3 (f_m,k, f_v,k, f_c,90,k, E_0,mean, E_0,05, G_mean, rho_k,
+  rho_mean). The D60-D80 f_c,90,k values (10.5 / 11.3 / 12.0 / 12.8 /
+  13.5 MPa) and D18 f_v,k = 3.5 MPa ARE the EN 338:2016 Table 3 values - the
+  2016 edition genuinely retains the step-up at D60. No change; the review's
+  "believed ~0.010 rho_k continuation" was wrong.
+- **NEW (found in the same verification): C45 E_0,05 was 10 000 MPa** - the
+  superseded EN 338:2009 value (2/3 x E_0,mean). EN 338:2016 Table 1 gives
+  10.1 kN/mm2. Corrected to 10 100 MPa in `softwood_data.json` (this repo) and
+  `timber-ec5` `softwood.json`, with a regression pin in the timber-ec5 test
+  suite. Effect was ~0.5% conservative on C45 LTB via sigma_m,crit -
+  negligible, but the wrong edition. Every other softwood value matches
+  EN 338:2016 exactly.
+
+### Closed by engineer decision
+
+- **N9 (GL36H/GL36C) — RETAIN, marked legacy.** Suppliers still offer 36
+  grade glulam. `timber-ec5` now emits `LegacyGradeWarning` on lookup
+  (withdrawn BS EN 1194:1999 classes, not in BS EN 14080:2013; confirm
+  procurement and declared properties with the supplier).
+- **N5 (bearing in auto-sizing) — INFORMATIVE ONLY.** The support detail is
+  more likely to be changed than the beam size, so a bearing failure must not
+  drive the section search. Implemented in `timber-ec5`: sizing accepts on
+  every applicable check except bearing; the bearing result is still evaluated
+  and reported per candidate, and a failing bearing on the returned solution
+  raises `SizingResult.bearing_advisory` directing the engineer to the support
+  detail. (The legacy auto-sizers still do not check bearing at all - N5's
+  legacy caveat stands.)
+- **N3 (green oak service class for strength) — OPTIONAL FLAG.**
+  `TimberBeam.green_oak_peak_load_while_wet` (timber-ec5, green oak only,
+  validated): when True, strength checks (bending, shear, LTB, bearing) take
+  k_mod at service class 3 - for peak ULS demand expected before the member
+  dries below 20% moisture content - while the deflection check keeps the
+  declared service class for k_def. Default False uses the declared service
+  class throughout, per the cl. 2.3.1.3 environment reading.
+- **P1 (G_0,05 derivations) — ACCEPTED** as the project convention
+  (already addressed by the engineer).
+- **P3 (LVL data) — PRELIMINARY DESIGN ONLY.** `timber-ec5` now emits
+  `PreliminaryDataWarning` on every LVL grade lookup: the bundled values are
+  of limited provenance and may be wrong or outdated; current supplier data
+  (DoP/certificate) must be obtained before reliance, especially shear and
+  compression perpendicular.
+- **P6 (trimmer fits) — PROVENANCE IDENTIFIED.** Source confirmed by the
+  engineer: *Manual for the Design of Timber Building Structures to
+  Eurocode 5* (IStructE/TRADA), **section 8.4.4** (trimmer beam calculation).
+  Cited in both repos' docstrings and `timber_ec5.codes.TIMBER_MANUAL`.
+  Remaining: record the edition/year of the copy in use and transcribe the
+  fitted validity ranges and embedded load/spacing assumptions from s. 8.4.4.
+
+### Closed later on 28 August 2026 (second pass, engineer decisions)
+
+- **N2 (green oak SC3 k_def) — CLOSED: 2.0 retained.** Engineer's rationale:
+  an SC3 member cannot get wetter than its installed near-saturation state;
+  the cl. 3.2(4) +1.0 addresses the drying that occurs under load towards
+  drier environments, which does not apply in SC3. Documented in
+  `timber_ec5.factors.k_def`.
+- **P2 (green oak TH values) — ACCEPTED and applied in both repos.**
+  f_c,90,k realigned from the superseded EN 338:2003 D30/D40 values to
+  EN 338:2016 Table 3: TH1/TH2/THB 8.0 → 5.3 MPa, THA 8.8 → 5.5 MPa (the wet
+  condition is handled by k_mod - now the SC3 flag - not the characteristic
+  value, which is referenced to 12% m.c.). TH2 E_0,05 6590 → 5640 MPa
+  (0.84 x E_0,mean per the EN 384 hardwood ratio, the ratio every
+  EN 338:2016 D-class row exhibits; the recorded 0.98 x E_0,mean was
+  physically implausible). Basis: engineer-accepted derivations, not book
+  citations - recorded in the timber-ec5 README provenance table and pinned
+  in its test suite. Other TH values retained from the book (2003-era
+  stiffnesses, conservative for deflection).
+- **P6 (trimmer fits) — CLOSED.** Edition confirmed: IStructE/TRADA, 2007.
+  Transcription of both fits verified against the engineer's copy of s. 8.4.4,
+  including the previously unexplained 1.075 C24 coefficient (the Manual's
+  "increase S_max by 7.5% for C24") and the legacy `self.length` divisor
+  (d2 - the trimming joist's own trial span; the fit is implicit).
+  Validity ranges and embedded loads now transcribed and ENFORCED in
+  `timber_ec5.joist` (documented, not enforced, in this repo): trimmed joist
+  span <= 6 m; 38 <= b <= 75 mm per member; 147 <= h <= 220 mm; supported
+  trimmer span <= 3.0 m (Fig 8.1); assumes 0.5 kN/m2 floor dead + 1.5 kN/m2
+  imposed and lightweight partitions <= 0.8 kN/m run. Residual micro-item:
+  the Manual defines d1/d2/d3 by cross-reference to its Fig 4.3(b) - confirm
+  the d2 = trimming-joist-span reading against that figure.
+- **Modal damping ratio — CLOSED: UK NA default 0.02 retained** as the
+  `TimberFloor.modal_damping_ratio` default, documented as user-overridable
+  (EC5 cl. 7.3.1(2) recommends 0.01 unless proven - noted for non-UK use).
+- **P4 (k_strut = 0.97) — CLOSED: confirmed** against the engineer's copy of
+  the UK NA (NA.2.7.2).
+
+### Final closures — 28 August 2026
+
+- **UK NA edition strings — CLOSED**: confirmed correct by the engineer
+  against the copies in use; the CHECK note in `timber_ec5.codes` is removed.
+- **k_dist unit convention — CLOSED**: the NA defines (EI)_b as the floor
+  flexural rigidity perpendicular to the joists in N.mm^2/m, matching the
+  code's convention, so the expression as coded reproduces the NA value.
+- **P6 d1/d2/d3 definitions — CLOSED**: confirmed by the engineer. d2 is the
+  length of the double member trimming joist itself - the full-length floor
+  joist that picks up the double member trimmer, which in turn trims
+  (supports) the partial-length joists at the opening. This matches the
+  code's reading (legacy `self.length`; `trimming_joist_span` in timber-ec5);
+  the fit is implicit in the d1/d2 term.
+
+**All review findings are now closed.** No open engineer actions remain.
+
+### Standing per-use notes (not open actions)
+
+These are inherent to how the values work, enforced or surfaced by the code
+at the point of use - nothing to check now:
+
+- **N4 (k_c,90)**: an enhanced bearing condition may only be claimed when the
+  cl. 6.1.5(3)/(4) geometry of the SPECIFIC support being designed satisfies
+  the clause (clear distance l_1 >= 2h; bearing length <= 400 mm for the
+  glulam discrete value). By nature a per-use verification; the enum, check
+  result notes and docstrings state the conditions whenever an enhanced value
+  is selected.
+- **P3 (LVL)**: preliminary design only; `PreliminaryDataWarning` fires on
+  every LVL lookup, which is exactly when current supplier data (DoP or
+  certificate) must be obtained.
+- **Trimmer/trimming-joist fits**: initial sizing only, within the Manual's
+  enforced ranges and stated loading assumptions; the chosen member must
+  still be verified by calculation.
